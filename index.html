@@ -258,7 +258,8 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 
 <input type="text" id="fromStationSearch" class="search-input" placeholder="From e.g. Teddington" oninput="onJourneyStationSearch('from')" autocomplete="off">
 <div id="fromSearchResults" class="search-results"></div>
-
+<input type="text" id="viaStationSearch" class="search-input" placeholder="Via e.g. Vauxhall" oninput="onJourneyStationSearch('via')" autocomplete="off">
+<div id="viaSearchResults" class="search-results"></div>
 <input type="text" id="toStationSearch" class="search-input" placeholder="To e.g. King's Cross" oninput="onJourneyStationSearch('to')" autocomplete="off">
 <div id="toSearchResults" class="search-results"></div>
 
@@ -522,9 +523,8 @@ function toggleLine(id, btn) {
 // ── STATIONS ──────────────────────────────────────────────
 // ── STATIONS ──────────────────────────────────────────────
 async function onJourneyStationSearch(type) {
-  const inputId = type === 'from' ? 'fromStationSearch' : 'toStationSearch';
-  const resultsId = type === 'from' ? 'fromSearchResults' : 'toSearchResults';
-
+  const inputId = type === 'from' ? 'fromStationSearch' : type === 'via' ? 'viaStationSearch' : 'toStationSearch';
+  const resultsId = type === 'from' ? 'fromSearchResults' : type === 'via' ? 'viaSearchResults' : 'toSearchResults';
   const q = document.getElementById(inputId).value.trim();
   const box = document.getElementById(resultsId);
 
@@ -577,9 +577,14 @@ function selectJourneyStation(type, index) {
     document.getElementById('fromSearchResults').classList.remove('show');
     document.getElementById('fromSearchResults').innerHTML = '';
   }
-
+if (type === 'via') {
+  savedStations[1] = savedStation;
+  document.getElementById('viaStationSearch').value = '';
+  document.getElementById('viaSearchResults').classList.remove('show');
+  document.getElementById('viaSearchResults').innerHTML = '';
+}
   if (type === 'to') {
-    savedStations[1] = savedStation;
+    savedStations[2] = savedStation;
     document.getElementById('toStationSearch').value = '';
     document.getElementById('toSearchResults').classList.remove('show');
     document.getElementById('toSearchResults').innerHTML = '';
@@ -601,7 +606,8 @@ function renderSavedStations() {
   const el = document.getElementById('savedStations');
 
   const from = savedStations[0];
-  const to = savedStations[1];
+  const via = savedStations[1];
+const to = savedStations[2];
 
   if (!from && !to) {
     el.innerHTML = '<div class="empty-stations">Choose a From and To station above</div>';
@@ -619,7 +625,21 @@ function renderSavedStations() {
 
     <div class="saved-station-chip">
       <div class="chip-left">
-        <div class="chip-name">To: ${to ? to.name : 'Not selected'}</div>
+      <div class="saved-station-chip">
+  <div class="chip-left">
+    <div class="chip-name">Via: ${via ? via.name : 'Optional'}</div>
+    <div class="chip-lines">${via ? via.lines.join(' · ') : ''}</div>
+  </div>
+  ${via ? `<button class="chip-remove" onclick="removeStation('${via.id}')">×</button>` : ''}
+</div>
+
+<div class="saved-station-chip">
+  <div class="chip-left">
+    <div class="chip-name">To: ${to ? to.name : 'Not selected'}</div>
+    <div class="chip-lines">${to ? to.lines.join(' · ') : ''}</div>
+  </div>
+  ${to ? `<button class="chip-remove" onclick="removeStation('${to.id}')">×</button>` : ''}
+</div>
         <div class="chip-lines">${to ? to.lines.join(' · ') : ''}</div>
       </div>
       ${to ? `<button class="chip-remove" onclick="removeStation('${to.id}')">×</button>` : ''}
