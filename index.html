@@ -514,61 +514,37 @@ function toggleLine(id, btn) {
 }
 
 // ── STATIONS ──────────────────────────────────────────────
-// ── STATIONS ──────────────────────────────────────────────
-async function onStationSearch() {
-  const q = document.getElementById('stationSearch').value.trim();
+function onStationSearch() {
+  const q = document.getElementById('stationSearch').value.trim().toLowerCase();
   const box = document.getElementById('searchResults');
-
-  if (q.length < 2) {
-    box.classList.remove('show');
-    box.innerHTML = '';
-    return;
-  }
-
-  box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">Searching TfL…</div></div>';
+  if (q.length < 2) { box.classList.remove('show'); box.innerHTML = ''; return; }
+  const matches = ALL_STATIONS.filter(s => s.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) { box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">No stations found</div></div>'; box.classList.add('show'); return; }
+  box.innerHTML = matches.map(s => `<div class="search-result-item" onclick="addStation('${s.id}','${s.name.replace(/'/g,"\\'")}','${s.lines.join(",")}')"><div class="result-name">${s.name}</div><div class="result-lines-tag">${s.lines.join(' · ')}</div></div>`).join('');
   box.classList.add('show');
-
-  try {
-    const matches = await window.TFL.searchStations(q);
-
-    if (!matches.length) {
-      box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">No stations found</div></div>';
-      return;
-    }
-
-    window.latestStationResults = matches;
-
-    box.innerHTML = matches.map((s, i) => `
-      <div class="search-result-item" onclick="addStationFromTfl(${i})">
-        <div class="result-name">${s.name}</div>
-        <div class="result-lines-tag">${(s.modes || []).join(' · ')}</div>
-      </div>
-    `).join('');
-
-  } catch (err) {
-    box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">Could not search TfL right now</div></div>';
-  }
 }
-
-function addStationFromTfl(index) {
-  const station = window.latestStationResults[index];
-
-  if (!station) return;
-
-  if (savedStations.find(s => s.id === station.id)) {
-    closeSearch();
-    return;
-  }
-
-  savedStations.push({
-    id: station.id,
-    name: station.name,
-    lines: station.modes || []
-  });
-
-  save();
-  renderSavedStations();
-  closeSearch();
+function addStation(id, name, linesStr) {
+  if (savedStations.find(s => s.id === id)) { closeSearch(); return; }
+  savedStations.push({ id, name, lines: linesStr.split(',') });
+  save(); renderSavedStations(); closeSearch();
+}
+function closeSearch() {
+  document.getElementById('stationSearch').value = '';
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchResults').innerHTML = '';
+}
+function removeStation(id) { savedStations = savedStations.filter(s => s.id !== id); save(); renderSavedStations(); }
+function renderSavedStations() {
+  const el = document.getElementById('savedStations');
+  if (!savedStations.length) { el.innerHTML = '<div class="empty-stations">No stations saved yet — search above</div>'; return; }
+  el.innerHTML = savedStations.map(s => `
+    <div class="saved-station-chip">
+      <div class="chip-left">
+        <div class="chip-name">${s.name}</div>
+        <div class="chip-lines">${s.lines.join(' · ')}</div>
+      </div>
+      <button class="chip-remove" onclick="removeStation('${s.id}')">×</button>
+    </div>`).join('');
 }
 
 // ── DAYS ──────────────────────────────────────────────────
@@ -838,7 +814,6 @@ if (!timeWindows.length) addTimeWindow({ fromH: 7, fromM: 0, toH: 9, toM: 30 });
 else renderTimeWindows();
 document.getElementById('notifToggle').checked = notifEnabled;
 if (notifEnabled) startPolling();
-
 </script>
 <script type="module" src="./tfl.js"></script>
 </body>
