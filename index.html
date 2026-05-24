@@ -254,13 +254,18 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
   <!-- STATIONS -->
   <div id="panel-stations" class="panel">
     <div class="section-card">
-      <div class="section-label">Search stations</div>
-      <input type="text" id="stationSearch" class="search-input" placeholder="e.g. Kings Cross, Vauxhall…" oninput="onStationSearch()" autocomplete="off">
-      <div id="searchResults" class="search-results"></div>
-      <div class="section-label" style="margin-top:0.1rem">Saved stations</div>
-      <div id="savedStations" class="saved-stations">
-        <div class="empty-stations">No stations saved yet — search above</div>
-      </div>
+     <div class="section-label">Journey stations</div>
+
+<input type="text" id="fromStationSearch" class="search-input" placeholder="From e.g. Teddington" oninput="onJourneyStationSearch('from')" autocomplete="off">
+<div id="fromSearchResults" class="search-results"></div>
+
+<input type="text" id="toStationSearch" class="search-input" placeholder="To e.g. King's Cross" oninput="onJourneyStationSearch('to')" autocomplete="off">
+<div id="toSearchResults" class="search-results"></div>
+
+<div class="section-label" style="margin-top:0.1rem">Selected journey</div>
+<div id="savedStations" class="saved-stations">
+  <div class="empty-stations">Choose a From and To station above</div>
+</div>
     </div>
   </div>
 
@@ -515,9 +520,13 @@ function toggleLine(id, btn) {
 }
 
 // ── STATIONS ──────────────────────────────────────────────
-async function onStationSearch() {
-  const q = document.getElementById('stationSearch').value.trim();
-  const box = document.getElementById('searchResults');
+// ── STATIONS ──────────────────────────────────────────────
+async function onJourneyStationSearch(type) {
+  const inputId = type === 'from' ? 'fromStationSearch' : 'toStationSearch';
+  const resultsId = type === 'from' ? 'fromSearchResults' : 'toSearchResults';
+
+  const q = document.getElementById(inputId).value.trim();
+  const box = document.getElementById(resultsId);
 
   if (q.length < 2) {
     box.classList.remove('show');
@@ -536,10 +545,11 @@ async function onStationSearch() {
       return;
     }
 
-    window.latestStationResults = matches;
+    window.latestJourneyResults = window.latestJourneyResults || {};
+    window.latestJourneyResults[type] = matches;
 
     box.innerHTML = matches.map((s, i) => `
-      <div class="search-result-item" onclick="addStationFromTfl(${i})">
+      <div class="search-result-item" onclick="selectJourneyStation('${type}', ${i})">
         <div class="result-name">${s.name}</div>
         <div class="result-lines-tag">${(s.modes || []).join(' · ')}</div>
       </div>
@@ -550,45 +560,72 @@ async function onStationSearch() {
   }
 }
 
-function addStationFromTfl(index) {
-  const station = window.latestStationResults[index];
+function selectJourneyStation(type, index) {
+  const station = window.latestJourneyResults?.[type]?.[index];
 
   if (!station) return;
 
-  if (savedStations.find(s => s.id === station.id)) {
-    closeSearch();
-    return;
-  }
-
-  savedStations.push({
+  const savedStation = {
     id: station.id,
     name: station.name,
     lines: station.modes || []
-  });
+  };
+
+  if (type === 'from') {
+    savedStations[0] = savedStation;
+    document.getElementById('fromStationSearch').value = '';
+    document.getElementById('fromSearchResults').classList.remove('show');
+    document.getElementById('fromSearchResults').innerHTML = '';
+  }
+
+  if (type === 'to') {
+    savedStations[1] = savedStation;
+    document.getElementById('toStationSearch').value = '';
+    document.getElementById('toSearchResults').classList.remove('show');
+    document.getElementById('toSearchResults').innerHTML = '';
+  }
+
+  savedStations = savedStations.filter(Boolean);
 
   save();
   renderSavedStations();
-  closeSearch();
-}
-function closeSearch() {
-  document.getElementById('stationSearch').value = '';
-  document.getElementById('searchResults').classList.remove('show');
-  document.getElementById('searchResults').innerHTML = '';
-}
-function removeStation(id) { savedStations = savedStations.filter(s => s.id !== id); save(); renderSavedStations(); }
-function renderSavedStations() {
-  const el = document.getElementById('savedStations');
-  if (!savedStations.length) { el.innerHTML = '<div class="empty-stations">No stations saved yet — search above</div>'; return; }
-  el.innerHTML = savedStations.map(s => `
-    <div class="saved-station-chip">
-      <div class="chip-left">
-        <div class="chip-name">${s.name}</div>
-        <div class="chip-lines">${s.lines.join(' · ')}</div>
-      </div>
-      <button class="chip-remove" onclick="removeStation('${s.id}')">×</button>
-    </div>`).join('');
 }
 
+function removeStation(id) {
+  savedStations = savedStations.filter(s => s.id !== id);
+  save();
+  renderSavedStations();
+}
+
+function renderSavedStations() {
+  const el = document.getElementById('savedStations');
+
+  const from = savedStations[0];
+  const to = savedStations[1];
+
+  if (!from && !to) {
+    el.innerHTML = '<div class="empty-stations">Choose a From and To station above</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="saved-station-chip">
+      <div class="chip-left">
+        <div class="chip-name">From: ${from ? from.name : 'Not selected'}</div>
+        <div class="chip-lines">${from ? from.lines.join(' · ') : ''}</div>
+      </div>
+      ${from ? `<button class="chip-remove" onclick="removeStation('${from.id}')">×</button>` : ''}
+    </div>
+
+    <div class="saved-station-chip">
+      <div class="chip-left">
+        <div class="chip-name">To: ${to ? to.name : 'Not selected'}</div>
+        <div class="chip-lines">${to ? to.lines.join(' · ') : ''}</div>
+      </div>
+      ${to ? `<button class="chip-remove" onclick="removeStation('${to.id}')">×</button>` : ''}
+    </div>
+  `;
+}
 // ── DAYS ──────────────────────────────────────────────────
 function buildDaysGrid() {
   const grid = document.getElementById('daysGrid');
