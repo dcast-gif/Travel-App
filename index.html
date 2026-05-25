@@ -870,7 +870,8 @@ async function fetchJourneyLegStatus() {
         type: 'journey',
         color: '#7c6af7',
         statusText: 'Journey check failed',
-        reason: err.message.includes('300') ? 'Station not recognised by TfL journey planner — try searching again and selecting a different result' : err.message,
+              reason: err.message.includes('300') ? `Disambiguation error — IDs used: ${legFrom.id} → ${legTo.id}` : err.message,
+
         cls: 'minor'
       });
     }
