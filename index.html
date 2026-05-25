@@ -747,7 +747,120 @@ async function silentCheck() {
     }
   } catch(e) {}
 }
+function lineIdFromJourneyName(name) {
+  if (!name) return null;
 
+  const clean = name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+
+  const match = LINES.find(line => {
+    const lineClean = line.name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+    return clean.includes(lineClean) || lineClean.includes(clean);
+  });
+
+  return match ? match.id : null;
+}
+
+function getJourneyLineNames(journey) {
+  const names = [];
+
+  (journey.legs || []).forEach(leg => {
+    if (leg.routeOptions && leg.routeOptions.length) {
+      leg.routeOptions.forEach(option => {
+        if (option.name && !names.includes(option.name)) names.push(option.name);
+      });
+    } else if (leg.mode && leg.mode.name && leg.mode.id !== 'walking') {
+      if (!names.includes(leg.mode.name)) names.push(leg.mode.name);
+    }
+  });
+
+  return names;
+}
+
+async function fetchJourneyLegStatus() {
+  if (!window.TFL || !window.TFL.planJourney) return [];
+
+  const stops = savedStations.filter(Boolean);
+
+  if (stops.length < 2) return [];
+
+  const journeyResults = [];
+
+  for (let i = 0; i < stops.length - 1; i++) {
+    const from = stops[i];
+    const to = stops[i + 1];
+
+    try {
+      const data = await window.TFL.planJourney(from.id, to.id);
+      const journey = data.journeys && data.journeys[0];
+
+      if (!journey) {
+        journeyResults.push({
+          name: `${from.name} → ${to.name}`,
+          type: 'journey',
+          color: '#7c6af7',
+          statusText: 'No journey found',
+          reason: '',
+          cls: 'minor'
+        });
+        continue;
+      }
+
+      const lineNames = getJourneyLineNames(journey);
+      const lineIds = lineNames.map(lineIdFromJourneyName).filter(Boolean);
+
+      let cls = 'good';
+      let statusText = 'Journey found';
+      let reason = `${lineNames.length ? lineNames.join(' · ') : 'Route found'} · about ${journey.duration} mins`;
+      let color = '#7c6af7';
+
+      if (lineIds.length && window.TFL.getLineStatuses) {
+        const statuses = await window.TFL.getLineStatuses(lineIds);
+
+        const statusParts = statuses.map(line => {
+          const status = line.lineStatuses?.[0]?.statusSeverityDescription || 'Unknown';
+          return `${line.name}: ${status}`;
+        });
+
+        const worst = statuses
+          .map(line => line.lineStatuses?.[0]?.statusSeverityDescription || '')
+          .find(status => severityClass(status) !== 'good');
+
+        if (worst) {
+          cls = severityClass(worst);
+          statusText = worst;
+        } else {
+          statusText = 'Good service';
+        }
+
+        const firstLine = LINES.find(l => l.id === lineIds[0]);
+        if (firstLine) color = firstLine.color;
+
+        reason = `${lineNames.join(' · ')} · about ${journey.duration} mins. ${statusParts.join(' · ')}`;
+      }
+
+      journeyResults.push({
+        name: `${from.name} → ${to.name}`,
+        type: 'journey',
+        color,
+        statusText,
+        reason,
+        cls
+      });
+
+    } catch (err) {
+      journeyResults.push({
+        name: `${from.name} → ${to.name}`,
+        type: 'journey',
+        color: '#7c6af7',
+        statusText: 'Journey check failed',
+        reason: err.message,
+        cls: 'minor'
+      });
+    }
+  }
+
+  return journeyResults;
+}
 // ── FETCH ALL STATUS ───────────────────────────────────────
 async function fetchAllStatus() {
   const results = [];
