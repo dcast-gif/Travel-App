@@ -736,16 +736,31 @@ function severityClass(desc) {
 async function silentCheck() {
   try {
     const results = await fetchAllStatus();
-    const problems = results.filter(r => r.cls !== 'good');
-    if (problems.length && 'Notification' in window && Notification.permission === 'granted') {
-      // One notification per problem
-      problems.forEach(p => {
-        new Notification(`⚠️ ${p.name}`, {
-          body: p.reason || p.statusText,
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    results.forEach(r => {
+      const prev = lastKnownStatus[r.name];
+      const changed = prev !== undefined && prev !== r.statusText;
+      const isNew = prev === undefined && r.cls !== 'good';
+      const nowBad = r.cls !== 'good';
+
+      if (nowBad && (changed || isNew)) {
+        // Build personalised message
+        const routeDesc = journeyFrom && journeyTo
+          ? `Your ${journeyFrom.name} → ${journeyTo.name} route may be affected. `
+          : '';
+        new Notification(`⚠️ ${r.name}: ${r.statusText}`, {
+          body: routeDesc + (r.reason || ''),
           icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
         });
-      });
-    }
+      }
+
+      // Update known status
+      lastKnownStatus[r.name] = r.statusText;
+    });
+  } catch(e) {}
+}
+
   } catch(e) {}
 }
 function lineIdFromJourneyName(name) {
