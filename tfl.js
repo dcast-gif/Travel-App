@@ -124,9 +124,10 @@ url.searchParams.set("nationalSearch", "true");
 
   const response = await fetch(url.toString());
 
-  if (!response.ok) {
-    throw new Error(`TfL journey planning failed: ${response.status}`);
-  }
+if (!response.ok) {
+  const errorText = await response.text();
+  throw new Error(`TfL journey planning failed: ${response.status} ${errorText.slice(0, 300)}`);
+}
 
   return response.json();
 }
