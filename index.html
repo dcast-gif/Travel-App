@@ -72,7 +72,8 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 
 /* ── LINES ── */
 .line-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem; }
-.line-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.52rem 0.75rem; border-radius: 9px; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; text-align: left; width: 100%; }
+.line-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.52rem 0.75rem; border-radius: 9px; border: 1.5px solid var(--text); background: transparent; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; text-align: left; width: 100%; }
+
 .line-btn.selected { border-color: var(--line-color, var(--accent)); background: color-mix(in srgb, var(--line-color, var(--accent)) 12%, transparent); color: var(--text); font-weight: 600; }
 .line-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
