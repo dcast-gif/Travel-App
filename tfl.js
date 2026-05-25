@@ -15,7 +15,7 @@ export const TFL_MODES = [
 
 function normaliseStation(match) {
   return {
-    id: match.icsId || match.id,
+    id: match.id,
     icsId: match.icsId || null,
     name: match.name,
     modes: match.modes || [],
