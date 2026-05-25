@@ -605,8 +605,11 @@ function syncSavedStations() {
 }
 
 
-function removeStation(id) {
-  savedStations = savedStations.filter(s => s.id !== id);
+function removeStation(role) {
+  if (role === 'from') journeyFrom = null;
+  if (role === 'via') journeyVia = null;
+  if (role === 'to') journeyTo = null;
+  syncSavedStations();
   save();
   renderSavedStations();
 }
