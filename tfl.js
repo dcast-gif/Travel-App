@@ -87,8 +87,19 @@ export async function getLineStatuses(lineIds = []) {
  * await planJourney(fromId, toId)
  */
 export async function planJourney(from, to, options = {}) {
-  const fromId = typeof from === "string" ? from : from?.id;
-  const toId = typeof to === "string" ? to : to?.id;
+  const fromId =
+  typeof from === "string"
+    ? from
+    : from?.lat && from?.lon
+      ? `${from.lat},${from.lon}`
+      : from?.id;
+
+const toId =
+  typeof to === "string"
+    ? to
+    : to?.lat && to?.lon
+      ? `${to.lat},${to.lon}`
+      : to?.id;
 
   if (!fromId || !toId) {
     throw new Error("Both from and to station IDs are required.");
