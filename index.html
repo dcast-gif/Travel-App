@@ -779,23 +779,27 @@ function getJourneyLineNames(journey) {
 async function fetchJourneyLegStatus() {
   if (!window.TFL || !window.TFL.planJourney) return [];
 
-  const stops = savedStations.filter(Boolean);
+  const from = savedStations[0];
+  const via  = savedStations[1];
+  const to   = savedStations[savedStations.length - 1];
 
-  if (stops.length < 2) return [];
+  if (!from || !to || from.id === to.id) return [];
+
+  // Build legs: if via exists, split into two legs. Otherwise one leg.
+  const legs = via && via.id !== from.id && via.id !== to.id
+    ? [ [from, via], [via, to] ]
+    : [ [from, to] ];
 
   const journeyResults = [];
 
-  for (let i = 0; i < stops.length - 1; i++) {
-    const from = stops[i];
-    const to = stops[i + 1];
-
+  for (const [legFrom, legTo] of legs) {
     try {
-      const data = await window.TFL.planJourney(from, to);
+      const data = await window.TFL.planJourney(legFrom, legTo);
       const journey = data.journeys && data.journeys[0];
 
       if (!journey) {
         journeyResults.push({
-          name: `${from.name} → ${to.name}`,
+          name: `${legFrom.name} → ${legTo.name}`,
           type: 'journey',
           color: '#7c6af7',
           statusText: 'No journey found',
@@ -839,7 +843,7 @@ async function fetchJourneyLegStatus() {
       }
 
       journeyResults.push({
-        name: `${from.name} → ${to.name}`,
+        name: `${legFrom.name} → ${legTo.name}`,
         type: 'journey',
         color,
         statusText,
@@ -849,11 +853,11 @@ async function fetchJourneyLegStatus() {
 
     } catch (err) {
       journeyResults.push({
-        name: `${from.name} → ${to.name}`,
+        name: `${legFrom.name} → ${legTo.name}`,
         type: 'journey',
         color: '#7c6af7',
         statusText: 'Journey check failed',
-        reason: err.message,
+        reason: err.message.includes('300') ? 'Station not recognised by TfL journey planner — try searching again and selecting a different result' : err.message,
         cls: 'minor'
       });
     }
@@ -861,6 +865,7 @@ async function fetchJourneyLegStatus() {
 
   return journeyResults;
 }
+
 // ── FETCH ALL STATUS ───────────────────────────────────────
 async function fetchAllStatus() {
   const results = [];
