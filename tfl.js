@@ -106,7 +106,7 @@ const toId =
   }
 
   const url = new URL(
-  `${TFL_BASE_URL}/Journey/JourneyResults/${encodeURIComponent(fromId)}%20/to/%20${encodeURIComponent(toId)}`
+ `${TFL_BASE_URL}/Journey/JourneyResults/${encodeURIComponent(fromId)}/to/${encodeURIComponent(toId)}`
 );
 
 url.searchParams.set("nationalSearch", "true");
