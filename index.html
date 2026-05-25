@@ -563,39 +563,43 @@ async function onJourneyStationSearch(type) {
 
 function selectJourneyStation(type, index) {
   const station = window.latestJourneyResults?.[type]?.[index];
-
   if (!station) return;
 
   const savedStation = {
     id: station.id,
     name: station.name,
-    lines: station.modes || []
+    lines: station.modes || [],
+    role: type   // store 'from', 'via', or 'to'
   };
 
   if (type === 'from') {
-    savedStations[0] = savedStation;
+    journeyFrom = savedStation;
     document.getElementById('fromStationSearch').value = '';
     document.getElementById('fromSearchResults').classList.remove('show');
     document.getElementById('fromSearchResults').innerHTML = '';
   }
-if (type === 'via') {
-  savedStations[1] = savedStation;
-  document.getElementById('viaStationSearch').value = '';
-  document.getElementById('viaSearchResults').classList.remove('show');
-  document.getElementById('viaSearchResults').innerHTML = '';
-}
+  if (type === 'via') {
+    journeyVia = savedStation;
+    document.getElementById('viaStationSearch').value = '';
+    document.getElementById('viaSearchResults').classList.remove('show');
+    document.getElementById('viaSearchResults').innerHTML = '';
+  }
   if (type === 'to') {
-    savedStations[2] = savedStation;
+    journeyTo = savedStation;
     document.getElementById('toStationSearch').value = '';
     document.getElementById('toSearchResults').classList.remove('show');
     document.getElementById('toSearchResults').innerHTML = '';
   }
 
-  savedStations = savedStations.filter(Boolean);
-
+  syncSavedStations();
   save();
   renderSavedStations();
 }
+
+function syncSavedStations() {
+  savedStations = [journeyFrom, journeyVia, journeyTo].filter(Boolean);
+}
+
 
 function removeStation(id) {
   savedStations = savedStations.filter(s => s.id !== id);
