@@ -447,7 +447,11 @@ let savedRoutes = [];
 function save() {
   try {
     localStorage.setItem('mc_lines', JSON.stringify([...selectedLines]));
-    localStorage.setItem('mc_stations', JSON.stringify(savedStations));
+        localStorage.setItem('mc_stations', JSON.stringify(savedStations));
+    localStorage.setItem('mc_journey_from', JSON.stringify(journeyFrom));
+    localStorage.setItem('mc_journey_via', JSON.stringify(journeyVia));
+    localStorage.setItem('mc_journey_to', JSON.stringify(journeyTo));
+
     localStorage.setItem('mc_times', JSON.stringify(timeWindows));
     localStorage.setItem('mc_days', JSON.stringify([...activeDays]));
     localStorage.setItem('mc_notif', notifEnabled ? '1' : '0');
