@@ -433,6 +433,10 @@ const JS_DAY_MAP = [6,0,1,2,3,4,5]; // [Sun,Mon,Tue,Wed,Thu,Fri,Sat] -> our inde
 // ── STATE ─────────────────────────────────────────────────
 let selectedLines = new Set();
 let savedStations = [];
+let journeyFrom = null;
+let journeyVia = null;
+let journeyTo = null;
+
 let timeWindows = [];
 let activeDays = new Set([0,1,2,3,4]); // Mon-Fri default
 let notifEnabled = false;
