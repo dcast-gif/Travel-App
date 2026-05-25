@@ -95,8 +95,10 @@ export async function planJourney(from, to, options = {}) {
   }
 
   const url = new URL(
-    `${TFL_BASE_URL}/Journey/JourneyResults/${encodeURIComponent(fromId)}/to/${encodeURIComponent(toId)}`
-  );
+  `${TFL_BASE_URL}/Journey/JourneyResults/${encodeURIComponent(fromId)}%20/to/%20${encodeURIComponent(toId)}`
+);
+
+url.searchParams.set("nationalSearch", "true");
 
   if (options.via) {
     const viaId =
