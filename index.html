@@ -956,12 +956,21 @@ async function testFullNotification() {
   try {
     const results = await fetchAllStatus();
     const problems = results.filter(r => r.cls !== 'good');
+    const routeDesc = journeyFrom && journeyTo
+      ? `Your ${journeyFrom.name} → ${journeyTo.name} route may be affected. `
+      : '';
     if (problems.length) {
       problems.forEach(p => {
-        new Notification(`⚠️ ${p.name}`, { body: p.reason || p.statusText, icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C' });
+        new Notification(`⚠️ ${p.name}: ${p.statusText}`, {
+          body: routeDesc + (p.reason || ''),
+          icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
+        });
       });
     } else {
-      new Notification('✅ Commute clear', { body: results.map(r => `${r.name}: ${r.statusText}`).join('\n'), icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C' });
+      new Notification('✅ All clear', {
+        body: (journeyFrom && journeyTo ? `Your ${journeyFrom.name} → ${journeyTo.name} route looks good. ` : '') + results.map(r => `${r.name}: ${r.statusText}`).join(' · '),
+        icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
+      });
     }
     showNotifAlert('✅ Notification sent!');
   } catch(err) { new Notification('Commute', { body: 'Could not fetch live data.' }); }
