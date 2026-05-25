@@ -891,6 +891,8 @@ async function fetchAllStatus() {
       }
     } catch(e) { results.push({ name: station.name, type: 'station', color: '#7c6af7', statusText: 'Check failed', reason: '', cls: 'minor' }); }
   }
+  const journeyLegs = await fetchJourneyLegStatus();
+results.push(...journeyLegs);
   return results;
 }
 
