@@ -88,20 +88,39 @@ export async function getLineStatuses(lineIds = []) {
  * Example:
  * await planJourney(fromId, toId)
  */
-export async function planJourney(from, to, options = {}) {
-      const fromId =
-    typeof from === "string"
-      ? from
-      : from?.lat && from?.lon
-        ? `${from.lat},${from.lon}`
-        : from?.id;
+async function resolveStopId(station) {
+  if (typeof station === "string") return station;
+  if (station?.lat && station?.lon) return `${station.lat},${station.lon}`;
+  const id = station?.id;
+  if (!id) return null;
+  // HUB IDs are interchange hubs — resolve to best child stop
+  if (id.startsWith("HUB")) {
+    try {
+      const res = await fetch(`${TFL_BASE_URL}/StopPoint/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const children = data.children || [];
+        // Prefer national-rail, then tube, then first child
+        const preferred = ["national-rail", "tube", "overground", "elizabeth-line", "dlr"];
+        for (const mode of preferred) {
+          const match = children.find(c =>
+            c.modes && c.modes.includes(mode) && c.id && !c.id.startsWith("HUB")
+          );
+          if (match) return match.id;
+        }
+        // Fallback to first non-hub child
+        const fallback = children.find(c => c.id && !c.id.startsWith("HUB"));
+        if (fallback) return fallback.id;
+      }
+    } catch(e) {}
+  }
+  return id;
+}
 
-  const toId =
-    typeof to === "string"
-      ? to
-      : to?.lat && to?.lon
-        ? `${to.lat},${to.lon}`
-        : to?.id;
+export async function planJourney(from, to, options = {}) {
+  const fromId = await resolveStopId(from);
+  const toId = await resolveStopId(to);
+
 
 
   if (!fromId || !toId) {
