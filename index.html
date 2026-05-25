@@ -790,7 +790,7 @@ async function fetchJourneyLegStatus() {
     const to = stops[i + 1];
 
     try {
-      const data = await window.TFL.planJourney(from.id, to.id);
+      const data = await window.TFL.planJourney(from, to);
       const journey = data.journeys && data.journeys[0];
 
       if (!journey) {
