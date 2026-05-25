@@ -461,7 +461,11 @@ function save() {
 function load() {
   try {
     const l = localStorage.getItem('mc_lines'); if (l) JSON.parse(l).forEach(x => selectedLines.add(x));
-    const s = localStorage.getItem('mc_stations'); if (s) savedStations = JSON.parse(s);
+        const s = localStorage.getItem('mc_stations'); if (s) savedStations = JSON.parse(s);
+    const jf = localStorage.getItem('mc_journey_from'); if (jf) journeyFrom = JSON.parse(jf);
+    const jv = localStorage.getItem('mc_journey_via'); if (jv) journeyVia = JSON.parse(jv);
+    const jt = localStorage.getItem('mc_journey_to'); if (jt) journeyTo = JSON.parse(jt);
+
     const t = localStorage.getItem('mc_times'); if (t) timeWindows = JSON.parse(t);
     const d = localStorage.getItem('mc_days'); if (d) { activeDays = new Set(JSON.parse(d)); }
     const n = localStorage.getItem('mc_notif'); if (n) notifEnabled = n === '1';
