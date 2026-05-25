@@ -617,47 +617,26 @@ function removeStation(role) {
 function renderSavedStations() {
   const el = document.getElementById('savedStations');
 
-  const from = savedStations[0];
-  const via = savedStations[1];
-const to = savedStations[2];
-
-  if (!from && !to) {
+  if (!journeyFrom && !journeyTo) {
     el.innerHTML = '<div class="empty-stations">Choose a From and To station above</div>';
     return;
   }
 
-  el.innerHTML = `
+  const chipHtml = (label, station, role) => `
     <div class="saved-station-chip">
       <div class="chip-left">
-        <div class="chip-name">From: ${from ? from.name : 'Not selected'}</div>
-        <div class="chip-lines">${from ? from.lines.join(' · ') : ''}</div>
+        <div class="chip-name">${label}: ${station ? station.name : 'Not selected'}</div>
+        <div class="chip-lines">${station ? station.lines.join(' · ') : ''}</div>
       </div>
-      ${from ? `<button class="chip-remove" onclick="removeStation('${from.id}')">×</button>` : ''}
-    </div>
+      ${station ? `<button class="chip-remove" onclick="removeStation('${role}')">×</button>` : ''}
+    </div>`;
 
-    <div class="saved-station-chip">
-      <div class="chip-left">
-      <div class="saved-station-chip">
-  <div class="chip-left">
-    <div class="chip-name">Via: ${via ? via.name : 'Optional'}</div>
-    <div class="chip-lines">${via ? via.lines.join(' · ') : ''}</div>
-  </div>
-  ${via ? `<button class="chip-remove" onclick="removeStation('${via.id}')">×</button>` : ''}
-</div>
-
-<div class="saved-station-chip">
-  <div class="chip-left">
-    <div class="chip-name">To: ${to ? to.name : 'Not selected'}</div>
-    <div class="chip-lines">${to ? to.lines.join(' · ') : ''}</div>
-  </div>
-  ${to ? `<button class="chip-remove" onclick="removeStation('${to.id}')">×</button>` : ''}
-</div>
-        <div class="chip-lines">${to ? to.lines.join(' · ') : ''}</div>
-      </div>
-      ${to ? `<button class="chip-remove" onclick="removeStation('${to.id}')">×</button>` : ''}
-    </div>
-  `;
+  el.innerHTML =
+    chipHtml('From', journeyFrom, 'from') +
+    chipHtml('Via', journeyVia, 'via') +
+    chipHtml('To', journeyTo, 'to');
 }
+
 // ── DAYS ──────────────────────────────────────────────────
 function buildDaysGrid() {
   const grid = document.getElementById('daysGrid');
