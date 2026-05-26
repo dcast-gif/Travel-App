@@ -1128,7 +1128,9 @@ buildDaysGrid();
 if (!timeWindows.length) addTimeWindow({ fromH: 7, fromM: 0, toH: 9, toM: 30 });
 else renderTimeWindows();
 document.getElementById('notifToggle').checked = notifEnabled;
+updateSaveButton();
 if (notifEnabled) startPolling();
+
 </script>
 <script type="module" src="./tfl.js"></script>
 </body>
