@@ -295,7 +295,8 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
   <button class="btn btn-primary" id="checkBtn" onclick="checkStatus()">Check Commute</button>
   <button class="btn btn-green" style="margin-top:0.45rem" onclick="testFullNotification()">🧪 Test Notification</button>
 
-  <button class="btn btn-save" onclick="openSaveModal()">💾 Save as Route…</button>
+  <button class="btn btn-save" id="saveRouteBtn" onclick="openSaveModal()">💾 Save as Route…</button>
+
 
   <div id="resultsSection" class="results-section" style="display:none">
     <div class="results-header" id="resultsHeader"></div>
