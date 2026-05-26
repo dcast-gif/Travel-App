@@ -1031,15 +1031,17 @@ function loadRoute(id) {
   timeWindows = JSON.parse(JSON.stringify(route.timeWindows));
   activeDays = new Set(route.activeDays);
   activeRouteName = route.name;
-  // Restore journey from/via/to from saved stations
+  activeRouteId = route.id;
   journeyFrom = route.stations[0] || null;
   journeyVia = route.stations.length === 3 ? route.stations[1] : null;
   journeyTo = route.stations[route.stations.length - 1] || null;
   save();
   buildLineGrid(); renderSavedStations(); renderTimeWindows(); buildDaysGrid();
+  updateSaveButton();
   navigateTo('home');
   showNotifAlert(`✅ Route "<strong>${route.name}</strong>" loaded.`);
 }
+
 
 function deleteRoute(id) {
   if (!confirm('Delete this saved route?')) return;
