@@ -1076,10 +1076,12 @@ function renderRouteList() {
       <div class="route-card" onclick="loadRoute(${r.id})">
         <div class="route-card-header">
           <div class="route-name">${r.name}</div>
-          <div class="route-actions" onclick="event.stopPropagation()">
+                  <div class="route-actions" onclick="event.stopPropagation()">
             <button class="route-action-btn" title="Load" onclick="loadRoute(${r.id})">↩</button>
+            <button class="route-action-btn" title="Rename" onclick="renameRoute(${r.id})">✏️</button>
             <button class="route-action-btn delete" title="Delete" onclick="deleteRoute(${r.id})">×</button>
           </div>
+
         </div>
         <div class="route-meta-row">${tags}</div>
       </div>`;
