@@ -1045,6 +1045,16 @@ function deleteRoute(id) {
   save(); renderRouteList();
 }
 
+function renameRoute(id) {
+  const route = savedRoutes.find(r => r.id === id);
+  if (!route) return;
+  const newName = prompt('Rename this route:', route.name);
+  if (!newName || !newName.trim()) return;
+  route.name = newName.trim();
+  if (activeRouteId === id) activeRouteName = route.name;
+  save(); renderRouteList();
+}
+
 // ── RENDER ROUTES PAGE ────────────────────────────────────
 function renderRouteList() {
   const el = document.getElementById('routeList');
