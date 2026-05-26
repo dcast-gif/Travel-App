@@ -33,7 +33,7 @@ function normaliseStation(match) {
  * const results = await searchStations("Teddington");
  */
 export async function searchStations(query, options = {}) {
-  const trimmed = String(query || "").trim();
+    const trimmed = String(query || "").trim().replace(/['']/g, "'");
 
   if (trimmed.length < 2) {
     return [];
