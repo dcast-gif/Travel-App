@@ -752,21 +752,26 @@ async function silentCheck() {
       const isNew = prev === undefined && r.cls !== 'good';
       const nowBad = r.cls !== 'good';
 
-      if (nowBad && (changed || isNew)) {
-        // Build personalised message
-        const routeDesc = journeyFrom && journeyTo
-          ? `Your ${journeyFrom.name} → ${journeyTo.name} route may be affected. `
-          : '';
-                const routeLabel = activeRouteName || (journeyFrom && journeyTo ? `${journeyFrom.name} → ${journeyTo.name}` : 'Your commute');
-        new Notification(`⚠️ ${routeLabel}: ${r.statusText}`, {
-          body: `${r.name}${r.reason ? ' — ' + r.reason.slice(0, 80) : ''}`,
-          icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
-        });
+            const routeLabel = activeRouteName || (journeyFrom && journeyTo ? `${journeyFrom.name} → ${journeyTo.name}` : 'Your commute');
 
+      if (changed || isNew) {
+        if (nowBad) {
+          new Notification(`⚠️ ${routeLabel}: ${r.statusText}`, {
+            body: `${r.name}${r.reason ? ' — ' + r.reason.slice(0, 80) : ''}`,
+            icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
+          });
+        } else if (prev !== undefined) {
+          // Status recovered — notify all clear
+          new Notification(`✅ ${routeLabel}: All clear`, {
+            body: `${r.name} is now showing Good Service.`,
+            icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
+          });
+        }
       }
 
       // Update known status
       lastKnownStatus[r.name] = r.statusText;
+
     });
   } catch(e) {}
 }
