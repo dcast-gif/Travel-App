@@ -825,10 +825,24 @@ async function fetchJourneyLegStatus() {
       const lineNames = getJourneyLineNames(journey);
       const lineIds = lineNames.map(lineIdFromJourneyName).filter(Boolean);
 
+      // Extract change points and departure time from legs
+      const legs = journey.legs || [];
+      const changePoints = [];
+      for (let li = 0; li < legs.length - 1; li++) {
+        const arrivalStop = legs[li].arrivalPoint?.commonName || null;
+        if (arrivalStop) changePoints.push(arrivalStop);
+      }
+      const firstDeparture = legs[0]?.departureTime
+        ? new Date(legs[0].departureTime).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})
+        : null;
+
       let cls = 'good';
       let statusText = 'Journey found';
-      let reason = `${lineNames.length ? lineNames.join(' · ') : 'Route found'} · about ${journey.duration} mins`;
       let color = '#7c6af7';
+
+      const changeStr = changePoints.length ? ` · Change at ${changePoints.join(', ')}` : ' · Direct';
+      const deptStr = firstDeparture ? ` · Next: ${firstDeparture}` : '';
+      let reason = `${lineNames.length ? lineNames.join(' · ') : 'Route found'} · ${journey.duration} mins${changeStr}${deptStr}`;
 
       if (lineIds.length && window.TFL.getLineStatuses) {
         const statuses = await window.TFL.getLineStatuses(lineIds);
@@ -852,8 +866,9 @@ async function fetchJourneyLegStatus() {
         const firstLine = LINES.find(l => l.id === lineIds[0]);
         if (firstLine) color = firstLine.color;
 
-        reason = `${lineNames.join(' · ')} · about ${journey.duration} mins. ${statusParts.join(' · ')}`;
+        reason = `${lineNames.join(' · ')} · ${journey.duration} mins${changeStr}${deptStr}. ${statusParts.join(' · ')}`;
       }
+
 
       journeyResults.push({
         name: `${legFrom.name} → ${legTo.name}`,
