@@ -751,10 +751,12 @@ async function silentCheck() {
         const routeDesc = journeyFrom && journeyTo
           ? `Your ${journeyFrom.name} → ${journeyTo.name} route may be affected. `
           : '';
-        new Notification(`⚠️ ${r.name}: ${r.statusText}`, {
-          body: routeDesc + (r.reason || ''),
+                const routeLabel = activeRouteName || (journeyFrom && journeyTo ? `${journeyFrom.name} → ${journeyTo.name}` : 'Your commute');
+        new Notification(`⚠️ ${routeLabel}: ${r.statusText}`, {
+          body: `${r.name}${r.reason ? ' — ' + r.reason.slice(0, 80) : ''}`,
           icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
         });
+
       }
 
       // Update known status
