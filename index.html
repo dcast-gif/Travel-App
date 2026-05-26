@@ -442,7 +442,9 @@ let activeDays = new Set([0,1,2,3,4]); // Mon-Fri default
 let notifEnabled = false;
 let notifInterval = null;
 let savedRoutes = [];
-let lastKnownStatus = {}; // key: result name, value: statusText
+let lastKnownStatus = {};
+let activeRouteName = null; // name of currently loaded saved route
+
 
 
 // ── PERSISTENCE ───────────────────────────────────────────
