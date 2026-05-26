@@ -971,25 +971,24 @@ async function testFullNotification() {
   try {
     const results = await fetchAllStatus();
     const problems = results.filter(r => r.cls !== 'good');
-    const routeDesc = journeyFrom && journeyTo
-      ? `Your ${journeyFrom.name} → ${journeyTo.name} route may be affected. `
-      : '';
+    const routeLabel = activeRouteName || (journeyFrom && journeyTo ? `${journeyFrom.name} → ${journeyTo.name}` : 'Your commute');
     if (problems.length) {
       problems.forEach(p => {
-        new Notification(`⚠️ ${p.name}: ${p.statusText}`, {
-          body: routeDesc + (p.reason || ''),
+        new Notification(`⚠️ ${routeLabel}: ${p.statusText}`, {
+          body: `${p.name}${p.reason ? ' — ' + p.reason.slice(0, 80) : ''}`,
           icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
         });
       });
     } else {
-      new Notification('✅ All clear', {
-        body: (journeyFrom && journeyTo ? `Your ${journeyFrom.name} → ${journeyTo.name} route looks good. ` : '') + results.map(r => `${r.name}: ${r.statusText}`).join(' · '),
+      new Notification(`✅ ${routeLabel}: All clear`, {
+        body: results.filter(r => r.type === 'journey').map(r => r.reason.slice(0, 100)).join(' | ') || 'No disruptions found.',
         icon: 'https://via.placeholder.com/192/7c6af7/ffffff?text=C'
       });
     }
     showNotifAlert('✅ Notification sent!');
   } catch(err) { new Notification('Commute', { body: 'Could not fetch live data.' }); }
 }
+
 
 // ── SAVE ROUTE MODAL ──────────────────────────────────────
 function openSaveModal() {
