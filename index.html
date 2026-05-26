@@ -998,13 +998,38 @@ async function testFullNotification() {
 
 
 // ── SAVE ROUTE MODAL ──────────────────────────────────────
+function updateSaveButton() {
+  const btn = document.getElementById('saveRouteBtn');
+  if (!btn) return;
+  if (activeRouteId) {
+    btn.textContent = '💾 Update Route';
+  } else {
+    btn.innerHTML = '💾 Save as Route…';
+  }
+}
+
 function openSaveModal() {
   if (selectedLines.size === 0 && savedStations.length === 0) { alert('Add some lines or stations first before saving a route.'); return; }
+  // If a route is loaded, update it directly without showing the modal
+  if (activeRouteId) {
+    updateExistingRoute();
+    return;
+  }
   document.getElementById('routeNameInput').value = '';
   document.getElementById('saveModal').classList.add('open');
   setTimeout(() => document.getElementById('routeNameInput').focus(), 100);
 }
 function closeSaveModal() { document.getElementById('saveModal').classList.remove('open'); }
+function updateExistingRoute() {
+  const route = savedRoutes.find(r => r.id === activeRouteId);
+  if (!route) return;
+  route.lines = [...selectedLines];
+  route.stations = JSON.parse(JSON.stringify(savedStations));
+  route.timeWindows = JSON.parse(JSON.stringify(timeWindows));
+  route.activeDays = [...activeDays];
+  save();
+  showNotifAlert(`✅ Route "<strong>${route.name}</strong>" updated.`);
+}
 function saveRoute() {
   const name = document.getElementById('routeNameInput').value.trim();
   if (!name) { document.getElementById('routeNameInput').focus(); return; }
@@ -1018,7 +1043,10 @@ function saveRoute() {
     created: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
   };
   savedRoutes.unshift(route);
+  activeRouteId = route.id;
+  activeRouteName = route.name;
   save(); closeSaveModal();
+  updateSaveButton();
   showNotifAlert(`✅ Route "<strong>${name}</strong>" saved! Find it in Saved Routes.`);
 }
 
