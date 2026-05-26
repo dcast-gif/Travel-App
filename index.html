@@ -554,8 +554,11 @@ async function onJourneyStationSearch(type) {
   box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">Searching TfL…</div></div>';
   box.classList.add('show');
 
+    // Normalise: remove apostrophes and common punctuation so "Kings" finds "King's"
+  const qNorm = q.replace(/[''`]/g, '').replace(/\s+/g, ' ');
   try {
-    const matches = await window.TFL.searchStations(q);
+    const matches = await window.TFL.searchStations(qNorm);
+
 
     if (!matches.length) {
       box.innerHTML = '<div class="search-result-item"><div class="result-name" style="color:var(--muted)">No stations found</div></div>';
